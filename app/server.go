@@ -10,23 +10,27 @@ import (
 func main() {
 	l, err := net.Listen("tcp", "0.0.0.0:6379")
 	if err != nil {
-		fmt.Println("Failed to bind to port 6379")
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
-	}
+	defer l.Close()
 
 	for {
-		_, err := bufio.NewReader(conn).ReadString('\n')
+		conn, err := l.Accept()
 		if err != nil {
-			fmt.Println(err)
-			return
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
 		}
-		conn.Write([]byte("+PONG\r\n"))
-	
+		go handleConn(conn)
 	}
 
+}
+
+func handleConn(conn net.Conn) {
+	_, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	conn.Write([]byte("+PONG\r\n"))
 }
