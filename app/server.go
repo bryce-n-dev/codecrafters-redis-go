@@ -27,10 +27,13 @@ func main() {
 }
 
 func handleConn(conn net.Conn) {
-	_, err := bufio.NewReader(conn).ReadString('\n')
-	if err != nil {
-		fmt.Println(err)
-		return
+	for {
+		_, err := bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+			conn.Close()
+			return
+		}
+		conn.Write([]byte("+PONG\r\n"))
 	}
-	conn.Write([]byte("+PONG\r\n"))
 }
